@@ -20,7 +20,7 @@ class Siamese_LSTM(torch.nn.Module) :
         self.linear3 = nn.Linear(100, 1)
         self.dropout = nn.Dropout(p=0.1)
         self.dist    = nn.PairwiseDistance(2)
-        
+
         
     def forward(self, batched_data):
         text1 = torch.tensor(batched_data[1]).to(self.device)
@@ -54,7 +54,7 @@ class Siamese_LSTM(torch.nn.Module) :
 
         result = self.linear3(result)
 
-        return merged
+        return result
     
     def lstm_embedding(self, lstm, word_embedding):
         lstm_out,(lstm_h, lstm_c) = lstm(word_embedding)
