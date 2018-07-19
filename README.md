@@ -3,6 +3,6 @@
 - Siamese LSTM
 - Decomposable attention
 - ABCNN
-- Word mover's distanse
+- Word mover's distance
 - Auto Encoder
 - Jacarrd Similarity(Not deep)
