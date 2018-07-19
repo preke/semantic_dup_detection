@@ -8,15 +8,17 @@ import numpy as np
 
 
 class Decomposable_Attention(nn.Module):
-    def __init__(self, args):
+    def __init__(self, vocab_size, device, word_matrix=None, embed_dim=300):
         super(Decomposable_Attention, self).__init__()
-        self.args      = args
-        self.embed_num = args.embed_num
-        self.embed_dim = args.embed_dim
+        self.embed_num = vocab_size
+        self.embed_dim = embed_dim
         self.embed     = nn.Embedding(self.embed_num, self.embed_dim)
-        # use pre-trained
-        if args.word_Embedding:
-            self.embed.weight.data.copy_(args.pretrained_weight)
+        self.device    = device
+        
+        if word_matrix is not None:
+            word_matrix = torch.tensor(word_matrix).to(self.device)
+            self.word_embedding.weight.data.copy_(word_matrix)
+            self.word_embedding.weight.requires_grad = False
 
         self.mlp_f = self.mlp_layers(self.embed_dim, self.embed_dim)
         self.mlp_g = self.mlp_layers(2 * self.embed_dim, self.embed_dim)
@@ -33,7 +35,9 @@ class Decomposable_Attention(nn.Module):
         mlp_layers.append(nn.ReLU())   
         return nn.Sequential(*mlp_layers)   # * used to unpack list
 
-    def forward(self, sent1_linear, sent2_linear):
+    def forward(self, batched_data):
+        sent1_linear = torch.tensor(batched_data[1]).to(self.device)
+        sent2_linear = torch.tensor(batched_data[2]).to(self.device)
         sent1_linear_embedding = self.embed(sent1_linear)
         sent2_linear_embedding = self.embed(sent2_linear)
         len1 = sent1_linear_embedding.size(1)
@@ -76,6 +80,7 @@ class Decomposable_Attention(nn.Module):
         sent2_output = torch.squeeze(sent2_output, 1)
         input_combine = torch.cat((sent1_output, sent2_output), 1)
         
+        '''Result'''
         result = self.mlp_h(input_combine)
         result = self.final_linear_1(result)
         result = self.final_linear_2(result)
